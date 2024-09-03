@@ -459,6 +459,7 @@ fn indent_block_with_lines(
     // add all of the actual content, with each line preceded by the indent string
     for line in &lines[1..] {
         buf.push_str(&s);
+        buf.push_str("  ");
         buf.push_str(line);
         buf.push('\n');
     }

@@ -348,6 +348,17 @@ where
             _ => false,
         };
 
+        if let SpanMode::Close { .. } = style {
+            write!(
+                current_buf,
+                "{name}:",
+                name = self.styled(Style::new().fg(Color::Green).bold(), span.metadata().name())
+            )
+            .unwrap();
+            self.write_timestamp(&span, current_buf);
+            current_buf.push(' ');
+        }
+
         if should_write {
             if self.config.targets {
                 let target = span.metadata().target();
@@ -392,7 +403,7 @@ where
         bufs.flush_current_buf(writer)
     }
 
-    fn write_timestamp<S>(&self, span: SpanRef<S>, buf: &mut String)
+    fn write_timestamp<S>(&self, span: &SpanRef<S>, buf: &mut String)
     where
         S: Subscriber + for<'span> LookupSpan<'span>,
     {
@@ -504,18 +515,18 @@ where
 
         // Time.
 
-        {
-            let prev_buffer_len = event_buf.len();
+        // {
+        //     let prev_buffer_len = event_buf.len();
 
-            self.timer
-                .format_time(&mut event_buf)
-                .expect("Unable to write time to buffer");
+        //     self.timer
+        //         .format_time(&mut event_buf)
+        //         .expect("Unable to write time to buffer");
 
-            // Something was written to the buffer, pad it with a space.
-            if prev_buffer_len < event_buf.len() {
-                write!(event_buf, " ").expect("Unable to write to buffer");
-            }
-        }
+        //     // Something was written to the buffer, pad it with a space.
+        //     if prev_buffer_len < event_buf.len() {
+        //         write!(event_buf, " ").expect("Unable to write to buffer");
+        //     }
+        // }
 
         let deindent = if self.config.indent_lines { 0 } else { 1 };
         // printing the indentation
@@ -524,12 +535,12 @@ where
             .map(|scope| scope.count() - deindent)
             .unwrap_or(0);
 
-        // check if this event occurred in the context of a span.
-        // if it has, get the start time of this span.
-        if let Some(span) = span {
-            self.write_timestamp(span, event_buf);
-            event_buf.push(' ');
-        }
+        // // check if this event occurred in the context of a span.
+        // // if it has, get the start time of this span.
+        // if let Some(span) = &span {
+        //     self.write_timestamp(span, event_buf);
+        //     event_buf.push(' ');
+        // }
 
         #[cfg(feature = "tracing-log")]
         let normalized_meta = event.normalized_metadata();
